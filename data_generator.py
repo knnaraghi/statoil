@@ -11,7 +11,7 @@ augment = ImageDataGenerator(width_shift_range=0.0,
                             rotation_range=10,
                             shear_range=0.0)
 
-def augment_generator(X, X_angle, y, batch_size=32):
+def augment_generator(X, X_angle, y, batch_size=16):
     gen_X = augment.flow(X, y, batch_size=batch_size, seed=random_seed)
     gen_angle = augment.flow(X, X_angle, batch_size=batch_size, seed=random_seed)
     
