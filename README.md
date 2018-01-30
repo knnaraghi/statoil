@@ -7,12 +7,12 @@ For example, if you want to finetune the last convolutional block of vgg16, chan
 
 THe following models can be called in train.py
 
-Vgg16 as 'vgg16'
-Vgg19 as 'vgg19'
-Xception as 'Xception'
-InceptionV3 as 'InceptionV3'
-Resnet50 as 'Resnet50'
-A basic CNN as 'Basic_CNN'
+Vgg16 as 'vgg16'  
+Vgg19 as 'vgg19'  
+Xception as 'Xception'  
+InceptionV3 as 'InceptionV3'  
+Resnet50 as 'Resnet50'  
+A basic CNN as 'Basic_CNN'  
 
 Augment_generator.py contains the data augmentation functions. For the best performance, one should ensemble models utilizing varying as well as no augmentation strategies. Batch size can also be varied as well. 
 
