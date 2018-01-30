@@ -40,6 +40,10 @@ def processData(train, test, model):
     
     X_test_angle = np.array(test.inc_angle)
     
+    if model=='Inceptionv3':
+        x_test_band1 = np.array([cv2.resize(band, (139, 139)).astype(np.float32) for band in x_test_band1])
+        x_test_band2 = np.array([cv2.resize(band, (139, 139)).astype(np.float32) for band in x_test_band2])
+    
     if model=='Resnet50':
         x_test_band1 = np.array([cv2.resize(band, (200, 200)).astype(np.float32) for band in x_test_band1])
         x_test_band2 = np.array([cv2.resize(band, (200, 200)).astype(np.float32) for band in x_test_band2])
