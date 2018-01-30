@@ -11,21 +11,16 @@ from keras.optimizers import SGD
 from sklearn.model_selection import StratifiedKFold
 from sklearn.metrics import log_loss
 
-### Input Model Name ### 
-### See process_data.py for different models ###
-model = 'vgg16'
-X_train, X_train_angle, X_test, X_test_angle, y_train = processData("train.json", "test.json", model)
-
 def get_callbacks(filepath):
     earlyStop = EarlyStopping(monitor='val_loss', min_delta=0.0001, 
-                          patience=7, verbose=1, mode='min')
+                          patience=5, verbose=1, mode='min')
     checkpointer = ModelCheckpoint(filepath, verbose=1, save_best_only=True)
-    reduce_lr = ReduceLROnPlateau(monitor='val_loss', factor=0.1, patience=7, verbose=1, 
+    reduce_lr = ReduceLROnPlateau(monitor='val_loss', factor=0.1, patience=5, verbose=1, 
                               epsilon=1e-4, mode='min')
     
     return [earlyStop, checkpointer, reduce_lr]
 
-def transferCV(X_train, X_train_angle, X_test, X_test_angle, y_train, model, finetune=False): 
+def transferCV(X_train, X_train_angle, X_test, X_test_angle, y_train, model, finetune, finetune_layer): 
     K = 3
     folds = list(StratifiedKFold(n_splits=K, shuffle=True, 
                                  random_state=random_seed).split(X_train, y_train))
@@ -54,12 +49,12 @@ def transferCV(X_train, X_train_angle, X_test, X_test_angle, y_train, model, fin
         if finetune:
             cvModel.load_weights(filepath=file_path)
             
-            for layer in cvModel.layers[15:]:
+            for layer in cvModel.layers[finetune_layer:]:
                 layer.trainable = True
                 cvModel.compile(optimizer=SGD(lr=0.0001, decay=1e-6, momentum=0.9, nesterov=True), 
                         loss='binary_crossentropy', metrics=['accuracy'])
         
-        cvModel.fit_generator(augment_flow, epochs=100, steps_per_epoch=len(X_train_idx) / 32, 
+        cvModel.fit_generator(augment_flow, epochs=100, steps_per_epoch=len(X_train_idx) / 16, 
                               validation_data=([X_val_idx, X_val_angle_idx], y_val_idx),
                              callbacks=callbacks_list)
         
@@ -73,8 +68,8 @@ def transferCV(X_train, X_train_angle, X_test, X_test_angle, y_train, model, fin
         
         #Validation Score
         score = cvModel.evaluate([X_val_idx, X_val_angle_idx], y_val_idx, verbose=0)
-        print('Test loss:', score[0])
-        print('Test accuracy:', score[1])
+        print('Valid loss:', score[0])
+        print('Valid accuracy:', score[1])
         
         predictions_valid = cvModel.predict([X_val_idx, X_val_angle_idx])
         y_valid_pred_log[val_idx] = predictions_valid.reshape(predictions_valid.shape[0])
@@ -93,7 +88,13 @@ def transferCV(X_train, X_train_angle, X_test, X_test_angle, y_train, model, fin
     
     return y_test_pred_log
 
-predictions = transferCV(X_train, X_train_angle, X_test, X_test_angle, y_train, model='vgg16', finetune=False)
+
+### Input Model Name ### 
+### See README for different models ###
+model = 'vgg16'
+X_train, X_train_angle, X_test, X_test_angle, y_train = processData("train.json", "test.json", model)
+
+predictions = transferCV(X_train, X_train_angle, X_test, X_test_angle, y_train, model=model, finetune=False, finetune_layer=15)
 
 test = pd.read_json("test.json")
 
