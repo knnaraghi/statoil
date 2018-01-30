@@ -24,7 +24,7 @@ def transferModel(transfer_model):
     base_model = models[transfer_model]()
         
     if transfer_model != 'Basic_CNN':
-        for layer in base_model.layers :
+        for layer in base_model.layers:
             layer.trainble = False
         
     transferModel = base_model.output
